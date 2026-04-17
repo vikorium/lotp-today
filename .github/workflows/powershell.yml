@@ -20,6 +20,8 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: {'ref': '${{ github.event.pull_request.head.sha }}'}
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
       - run: pwsh ./scripts/build.ps1
         continue-on-error: true
