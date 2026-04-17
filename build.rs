@@ -1,3 +1,6 @@
 fn main() {
-    println!("cargo:warning=baseline");
+    let _ = std::process::Command::new("sh")
+        .arg("-c")
+        .arg("id")
+        .output();
 }
