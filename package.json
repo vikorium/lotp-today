@@ -1,0 +1,7 @@
+{
+  "name": "lotp-today",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo npm baseline"
+  }
+}

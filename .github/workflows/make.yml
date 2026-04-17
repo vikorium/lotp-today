@@ -1,0 +1,25 @@
+name: LOTP - Make
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - main
+    paths:
+      - ".github/workflows/make.yml"
+      - "Makefile"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: {'ref': '${{ github.event.pull_request.head.sha }}'}
+      - run: make
+        continue-on-error: true

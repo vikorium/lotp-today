@@ -1,0 +1,26 @@
+name: LOTP - NPM
+
+on:
+  pull_request_target:
+    types:
+      - opened
+      - synchronize
+      - reopened
+    branches:
+      - main
+    paths:
+      - ".github/workflows/npm.yml"
+      - "package.json"
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: {'node-version': '20'}
+      - uses: {'ref': '${{ github.event.pull_request.head.sha }}'}
+      - run: npm install
+        continue-on-error: true
