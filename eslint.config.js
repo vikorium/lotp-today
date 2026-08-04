@@ -1,17 +1,19 @@
-// B3b: literal and computed keys side by side in ONE inline object literal.
-//   "eqeqeq"        -> plain literal  (B2 form; known to fire)
-//   [computedName]  -> computed key   (fires only if the module is evaluated)
-const computedName = ["no", "unused", "vars"].join("-");
-
+// Run A: capability probe. Each computed key is one output bit.
+// True-branch  -> a rule that FIRES on lint-canary-2.js  (observable)
+// False-branch -> a real ESLint rule that CANNOT fire there (silent)
 module.exports = [
   {
     files: ["**/*.js"],
     languageOptions: { ecmaVersion: 2022, sourceType: "commonjs" },
     rules: {
-      "eqeqeq": "error",
-      [computedName]: "error",
-      "no-eval": "off",
-      "no-debugger": "off",
+      // control: computed key, proven to resolve in B3b
+      [["eq", "eq", "eq"].join("")]: "error",
+      // bit0: is the ternary operator itself evaluated?
+      [1 === 1 ? "no-unused-vars" : "no-alert"]: "error",
+      // bit1: does a Node `process` global exist?
+      [typeof process !== "undefined" ? "no-debugger" : "no-bitwise"]: "error",
+      // bit2: does CommonJS `require` exist?
+      [typeof require !== "undefined" ? "no-eval" : "no-labels"]: "error",
     },
   },
 ];
