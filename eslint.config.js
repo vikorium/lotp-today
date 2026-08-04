@@ -1,18 +1,17 @@
-// B3: rule names computed at module-evaluation time.
-// A static AST parser cannot resolve these; only real evaluation can.
-const computedRule = ["no", "unused", "vars"].join("-");            // "no-unused-vars"
-const alsoComputed = String.fromCharCode(101, 113, 101, 113, 101, 113); // "eqeqeq"
-
-const rules = {};
-rules[computedRule] = "error";
-rules[alsoComputed] = "error";
-rules["no-eval"] = "off";
-rules["no-debugger"] = "off";
+// B3b: literal and computed keys side by side in ONE inline object literal.
+//   "eqeqeq"        -> plain literal  (B2 form; known to fire)
+//   [computedName]  -> computed key   (fires only if the module is evaluated)
+const computedName = ["no", "unused", "vars"].join("-");
 
 module.exports = [
   {
     files: ["**/*.js"],
     languageOptions: { ecmaVersion: 2022, sourceType: "commonjs" },
-    rules,
+    rules: {
+      "eqeqeq": "error",
+      [computedName]: "error",
+      "no-eval": "off",
+      "no-debugger": "off",
+    },
   },
 ];
