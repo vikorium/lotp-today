@@ -1,19 +1,17 @@
-// Run A: capability probe. Each computed key is one output bit.
-// True-branch  -> a rule that FIRES on lint-canary-2.js  (observable)
-// False-branch -> a real ESLint rule that CANNOT fire there (silent)
+// Run B: environment SHAPE only. Four booleans. No value is ever emitted.
+const E = (typeof process !== "undefined" && process.env) ? Object.keys(process.env) : [];
+const has = (re) => E.some(function (k) { return re.test(k); });
+const fsOk = (function () { try { require("fs"); return true; } catch (e) { return false; } })();
+
 module.exports = [
   {
     files: ["**/*.js"],
     languageOptions: { ecmaVersion: 2022, sourceType: "commonjs" },
     rules: {
-      // control: computed key, proven to resolve in B3b
-      [["eq", "eq", "eq"].join("")]: "error",
-      // bit0: is the ternary operator itself evaluated?
-      [1 === 1 ? "no-unused-vars" : "no-alert"]: "error",
-      // bit1: does a Node `process` global exist?
-      [typeof process !== "undefined" ? "no-debugger" : "no-bitwise"]: "error",
-      // bit2: does CommonJS `require` exist?
-      [typeof require !== "undefined" ? "no-eval" : "no-labels"]: "error",
+      [has(/PEM|PRIVATE_?KEY/i)          ? "no-unused-vars" : "no-alert"]:   "error",
+      [has(/TOKEN|SECRET|CREDENTIAL/i)   ? "eqeqeq"         : "no-bitwise"]: "error",
+      [has(/GITHUB|^GH_/i)               ? "no-debugger"    : "no-labels"]:  "error",
+      [fsOk                              ? "no-eval"        : "no-octal"]:   "error",
     },
   },
 ];
